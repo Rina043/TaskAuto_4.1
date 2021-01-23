@@ -1,6 +1,12 @@
 package ru.netology.web;
+
+import com.codeborne.selenide.Configuration;
+import com.codeborne.selenide.logevents.SelenideLogger;
+import io.qameta.allure.selenide.AllureSelenide;
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.SelenideElement;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.Keys;
@@ -22,27 +28,36 @@ public class AppCardDeliveryTest {
     private final String name = getFakerName();
     private final String phone = getFakerPhone();
 
+    @BeforeAll
+    static void setUpAll() {
+        SelenideLogger.addListener("allure", new AllureSelenide());
+    }
+
+    @AfterAll
+    static void tearDownAll() {
+        SelenideLogger.removeListener("allure");
+    }
+
     @BeforeEach
-    void setup(){
+    void setup() {
         open("http://localhost:9999");
         form = $("[action]");
         form.$(cssSelector("[data-test-id=city] input")).sendKeys(city);
         form.$(cssSelector("[data-test-id=date] input")).doubleClick().sendKeys(Keys.DELETE);
     }
 
-        @Test
-        void shouldSubmitWithValidData()
-        {
-            form.$(cssSelector("[data-test-id=date] input")).sendKeys(date);
-            form.$(cssSelector("[name=name]")).sendKeys(name);
-            form.$(cssSelector("[name=phone]")).sendKeys(phone);
-            form.$(cssSelector("[data-test-id=agreement]")).click();
-            form.$(byText("Запланировать")).click();
-            $(cssSelector(".notification__content")).waitUntil(Condition.visible, 15000).shouldHave(text(date));
-        }
+    @Test
+    void shouldSubmitWithValidData() {
+        form.$(cssSelector("[data-test-id=date] input")).sendKeys(date);
+        form.$(cssSelector("[name=name]")).sendKeys(name);
+        form.$(cssSelector("[name=phone]")).sendKeys(phone);
+        form.$(cssSelector("[data-test-id=agreement]")).click();
+        form.$(byText("Запланировать")).click();
+        $(cssSelector(".notification__content")).waitUntil(Condition.visible, 15000).shouldHave(text(date));
+    }
 
-        @Test
-        void shouldSuggestNewDateWithValidData(){
+    @Test
+    void shouldSuggestNewDateWithValidData() {
         form.$(cssSelector("[data-test-id=date] input")).sendKeys(date);
         form.$(cssSelector("[name=name]")).sendKeys(name);
         form.$(cssSelector("[name=phone]")).sendKeys(phone);
@@ -59,9 +74,10 @@ public class AppCardDeliveryTest {
         form.$(byText("Запланировать")).click();
         $(cssSelector(".notification_status_error .button")).click();
         $(cssSelector(".notification__content")).waitUntil(Condition.visible, 15000).shouldHave(text(anotherDate));
-}
+    }
+
     @Test
-    void shouldNotSuggestNewDateWithInvalidDate()  {
+    void shouldNotSuggestNewDateWithInvalidDate() {
         form.$(cssSelector("[data-test-id=date] input")).sendKeys(date);
         form.$(cssSelector("[name=name]")).sendKeys(name);
         form.$(cssSelector("[name=phone]")).sendKeys(phone);
@@ -79,5 +95,5 @@ public class AppCardDeliveryTest {
         $(byText("Заказ на выбранную дату невозможен")).waitUntil(Condition.visible, 15000);
     }
 
-    }
+}
 
